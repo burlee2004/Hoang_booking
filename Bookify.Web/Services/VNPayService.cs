@@ -34,9 +34,21 @@ namespace Bookify.Web.Services
             string ipAddr = ctx.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "127.0.0.1";
             if (string.IsNullOrEmpty(ipAddr) || ipAddr == "0.0.0.1") ipAddr = "127.0.0.1";
 
-            string createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
-            string txnRef     = orderId.ToString();
-            long   vnpAmount  = (long)(amount * 100);
+            // --- BẮT ĐẦU ĐOẠN CODE MỚI THÊM VÀO ---
+            // Lấy giờ quốc tế UTC
+            DateTime utcNow = DateTime.UtcNow;
+
+            // Ép sang múi giờ Việt Nam (UTC+7)
+            TimeZoneInfo vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime vnTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vnTimeZone);
+
+            // Gán vnTime vào các biến của VNPay thay vì DateTime.Now
+            string createDate = vnTime.ToString("yyyyMMddHHmmss");
+            string expireDate = vnTime.AddMinutes(15).ToString("yyyyMMddHHmmss"); // Thêm thời gian hết hạn 15 phút
+            // --- KẾT THÚC ĐOẠN CODE MỚI THÊM VÀO ---
+
+            string txnRef = orderId.ToString();
+            long vnpAmount = (long)(amount * 100);
 
             // Sort theo key alphabet (StringComparer.Ordinal = byte order, giống ksort PHP)
             var vnpParams = new SortedDictionary<string, string>(StringComparer.Ordinal)
@@ -45,6 +57,7 @@ namespace Bookify.Web.Services
                 ["vnp_Command"]    = "pay",
                 ["vnp_CreateDate"] = createDate,
                 ["vnp_CurrCode"]   = "VND",
+                ["vnp_ExpireDate"] = expireDate, // <-- THÊM DÒNG NÀY VÀO ĐÂY
                 ["vnp_IpAddr"]     = ipAddr,
                 ["vnp_Locale"]     = "vn",
                 ["vnp_OrderInfo"]  = orderInfo,
