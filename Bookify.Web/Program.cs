@@ -55,7 +55,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+// DÒNG QUAN TRỌNG NHẤT: Tự động bẻ lái HTTP sang HTTPS
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
