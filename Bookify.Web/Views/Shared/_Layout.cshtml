@@ -40,7 +40,18 @@
     <script src="~/js/jquery.slicknav.js" asp-append-version="true"></script>
     <script src="~/js/owl.carousel.min.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
-
+    <script>
+        /* Cách 2: Ẩn bằng JS (quét thẻ div cuối cùng do Somee tiêm vào) */
+        document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+        var bodyElements = document.body.children;
+        var lastElement = bodyElements[bodyElements.length - 1];
+        if (lastElement.tagName === "DIV" && lastElement.innerHTML.includes("Somee.com")) {
+        lastElement.style.display = "none";
+        }
+        }, 500); // Đợi 0.5s cho quảng cáo load xong rồi ẩn đi
+        });
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>
