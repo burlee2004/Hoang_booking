@@ -6,8 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest # Sử dụng máy ảo Windows để build cho đồng bộ với IIS Somee
-
+    runs-on: ubuntu-latest # ĐÃ SỬA THÀNH UBUNTU ĐỂ TĂNG TỐC
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
