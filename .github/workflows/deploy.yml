@@ -1,0 +1,34 @@
+name: Deploy ASP.NET Core to Somee
+
+on:
+  push:
+    branches: [ "main" ] # Sửa thành "master" nếu nhánh chính của bạn tên là master
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest # Sử dụng máy ảo Windows để build cho đồng bộ với IIS Somee
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0' # Sửa lại đúng phiên bản .NET bạn đang code (ví dụ: 6.0.x, 7.0.x, 9.0.x)
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build and Publish
+      # Lệnh này biên dịch code thành sản phẩm deploy và lưu vào thư mục publish_output
+      run: dotnet publish -c Release -o ./publish_output
+
+    - name: Deploy via FTP to Somee
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./publish_output/
+        server-dir: /www.hoangbooking.somee.com/# ĐÃ SỬA LẠI ĐÚNG THƯ MỤC CỦA BẠN
