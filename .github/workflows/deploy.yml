@@ -14,7 +14,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0' # Sửa lại đúng phiên bản .NET bạn đang code (ví dụ: 6.0.x, 7.0.x, 9.0.x)
+        dotnet-version: '8.0' 
 
     - name: Restore dependencies
       run: dotnet restore
