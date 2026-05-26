@@ -1,0 +1,100 @@
+﻿@{
+    ViewData["Title"] = "Bảng Điều Khiển Admin";
+    Layout = "_Layout";
+}
+
+<section class="admin-dashboard spad">
+    <div class="container">
+        <h2 class="text-center mb-5" style="color:#8B4513;">Bảng Điều Khiển Quản Trị</h2>
+
+        <div class="row">
+
+            <!-- Quản lý loại phòng -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="@Url.Action("RoomTypesGrid", "RoomType")" class="dashboard-link">
+                    <div class="dashboard-item text-center">
+                        <i class="fa fa-list-alt fa-3x mb-3"></i>
+                        <h4>Quản Lý Loại Phòng</h4>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Quản lý phòng -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="@Url.Action("RoomsGrid", "RoomsAdmin")" class="dashboard-link">
+                    <div class="dashboard-item text-center">
+                        <i class="fa fa-bed fa-3x mb-3"></i>
+                        <h4>Quản Lý Phòng</h4>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Xem đặt phòng -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="@Url.Action("Bookings", "Bookings")" class="dashboard-link">
+                    <div class="dashboard-item text-center">
+                        <i class="fa fa-calendar-check-o fa-3x mb-3"></i>
+                        <h4>Xem Đặt Phòng</h4>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Quản lý liên hệ -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="@Url.Action("Index", "ContactAdmin")" class="dashboard-link">
+                    <div class="dashboard-item text-center">
+                        <i class="fa fa-envelope fa-3x mb-3"></i>
+                        <h4>Quản Lý Liên Hệ</h4>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Đặt lại đặt phòng -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <form asp-controller="Payment" asp-action="ResetBookings" method="post" class="dashboard-link">
+                    <button type="submit" class="dashboard-item text-center reset-btn-card"
+                            style="width:100%; border:none; background:none;"
+                            onclick="return confirm('Bạn có chắc muốn đặt lại tất cả đặt phòng không?');">
+                        <i class="fa fa-refresh fa-3x mb-3" style="color:#D2A679;"></i>
+                        <h4 style="color:#D2A679;">Đặt Lại Tất Cả Đặt Phòng</h4>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Card style */
+    .dashboard-link {
+        text-decoration: none;
+    }
+
+    .dashboard-item {
+        background: #fff;
+        padding: 40px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        color: inherit;
+    }
+
+        .dashboard-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            background-color: #f9f5f0;
+        }
+
+        .dashboard-item i {
+            color: #D2A679; /* lighter brown */
+        }
+
+        .dashboard-item h4 {
+            margin-top: 15px;
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+   
+</style>

@@ -1,0 +1,133 @@
+﻿@model Bookify.Data.Models.Reservation
+
+@{
+    ViewData["Title"] = "Chi Tiết Đặt Phòng";
+    Layout = "_Layout";
+
+    string badgeClass = Model.Status switch
+    {
+        "Đã Duyệt"                      => "bg-success",
+        "Đã thanh toán (VNPay)"         => "bg-success",
+        "Đã thanh toán (Stripe)"        => "bg-success",
+        "Đã Từ Chối"                    => "bg-danger",
+        "Chờ thanh toán tại khách sạn"  => "bg-info text-dark",
+        "Pending"                       => "bg-warning text-dark",
+        _                               => "bg-secondary"
+    };
+}
+
+<section class="spad">
+    <div class="container">
+
+        <h2 class="text-center mb-4" style="color:#8B4513;">Chi Tiết Đặt Phòng #@Model.Id</h2>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success"><i class="fa fa-check-circle me-2"></i>@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger"><i class="fa fa-times-circle me-2"></i>@TempData["ErrorMessage"]</div>
+        }
+
+        <!-- Thông tin chính -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <tr>
+                        <th width="200">Mã Đặt Phòng</th>
+                        <td><strong>#@Model.Id</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Người Dùng</th>
+                        <td>@Model.UserId</td>
+                    </tr>
+                    <tr>
+                        <th>Ngày Đặt</th>
+                        <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>Trạng Thái</th>
+                        <td>
+                            <span class="badge @badgeClass px-3 py-2 fs-6">@Model.Status</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Tổng Tiền</th>
+                        <td><strong class="text-danger fs-5">$@Model.TotalAmount</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Nút Duyệt / Từ chối (chỉ hiện khi chưa xử lý) -->
+        @if (Model.Status == "Pending" || Model.Status == "Chờ thanh toán tại khách sạn")
+        {
+            <div class="d-flex gap-3 mb-4">
+                <form asp-controller="Bookings" asp-action="ApproveBooking" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-bold"
+                            onclick="return confirm('Duyệt đặt phòng #@Model.Id?')">
+                        <i class="fa fa-check-circle me-2"></i>Duyệt Đặt Phòng
+                    </button>
+                </form>
+                <form asp-controller="Bookings" asp-action="RejectBooking" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning px-4 py-2 fw-bold"
+                            onclick="return confirm('Từ chối đặt phòng #@Model.Id?')">
+                        <i class="fa fa-times-circle me-2"></i>Từ Chối
+                    </button>
+                </form>
+            </div>
+        }
+
+        <!-- Danh sách phòng đã đặt -->
+        <h5 style="color:#8B4513;" class="mb-3">
+            <i class="fa fa-bed me-2"></i>Danh Sách Phòng Đã Đặt
+        </h5>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-bordered table-hover text-center mb-0">
+                    <thead style="background-color:#8B4513; color:white;">
+                        <tr>
+                            <th>Giá/Đêm</th>
+                            <th>Ngày Nhận Phòng</th>
+                            <th>Ngày Trả Phòng</th>
+                            <th>Số Đêm</th>
+                            <th>Số Lượng</th>
+                            <th>Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            int nights = (item.CheckOut - item.CheckIn).Days;
+                            <tr>
+                                <td>$@item.PricePerNight</td>
+                                <td>@item.CheckIn.ToString("dd/MM/yyyy")</td>
+                                <td>@item.CheckOut.ToString("dd/MM/yyyy")</td>
+                                <td>@nights đêm</td>
+                                <td>@item.Quantity</td>
+                                <td><strong>$@item.TotalPrice</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light">
+                            <td colspan="5" class="text-end fw-bold">Tổng Cộng:</td>
+                            <td class="fw-bold text-danger">$@Model.TotalAmount</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a asp-action="Bookings" class="btn btn-secondary">
+                <i class="fa fa-arrow-left me-1"></i> Quay Lại Danh Sách
+            </a>
+        </div>
+
+    </div>
+</section>

@@ -1,0 +1,589 @@
+﻿@model Bookify.Data.Models.Room
+
+@{
+    ViewData["Title"] = "Chi Tiết Phòng - " + Model.RoomType.Name;
+    bool isBooked = ViewBag.IsBooked != null ? (bool)ViewBag.IsBooked : false;
+}
+
+<style>
+    /* ── Hero ── */
+    .room-hero {
+        position: relative;
+        height: 360px;
+        width: 50%;
+        overflow: hidden;
+        background: #1a1a2e;
+        border-radius: 16px;
+        margin: 24px auto 0;
+    }
+    .room-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.85;
+        transition: transform 0.6s ease;
+    }
+    .room-hero:hover img { transform: scale(1.03); }
+    .room-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%);
+    }
+    .room-hero-badge {
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .room-hero-title {
+        position: absolute;
+        bottom: 28px;
+        left: 32px;
+        color: #fff;
+    }
+    .room-hero-title h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    .room-hero-title .price-tag {
+        font-size: 1.3rem;
+        color: #f0c060;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    /* ── Layout ── */
+    .room-detail-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+    }
+
+    /* ── Info cards ── */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    .info-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px 16px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        border: 1px solid #f0ece6;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .info-card i {
+        font-size: 1.6rem;
+        color: #c8963e;
+        margin-bottom: 8px;
+    }
+    .info-card .label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-card .value { font-size: 1rem; font-weight: 700; color: #2d2d2d; margin-top: 2px; }
+
+    /* ── Description ── */
+    .desc-box {
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        border: 1px solid #f0ece6;
+        margin-bottom: 28px;
+    }
+    .desc-box h5 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #8B4513;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+    .desc-box p { color: #555; line-height: 1.8; margin: 0; }
+
+    /* ── Amenities ── */
+    .amenity-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+    }
+    .amenity-tag {
+        background: #fdf6ee;
+        border: 1px solid #e8d5b7;
+        color: #8B4513;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* ── Booking panel ── */
+    .booking-panel {
+        background: #fff;
+        border-radius: 20px;
+        padding: 32px 28px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        border: 1px solid #f0ece6;
+        position: sticky;
+        top: 24px;
+    }
+    .booking-panel .panel-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 6px;
+    }
+    .booking-panel .panel-price {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #c8963e;
+        margin-bottom: 20px;
+    }
+    .booking-panel .panel-price span {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: #999;
+    }
+    .date-group label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+    .date-group input[type="date"] {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #e0d5c5;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        color: #333;
+        background: #fafaf8;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+    .date-group input[type="date"]:focus {
+        border-color: #c8963e;
+        box-shadow: 0 0 0 3px rgba(200,150,62,0.12);
+        background: #fff;
+    }
+    .btn-check-avail {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #c8963e, #a0722a);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        letter-spacing: 0.3px;
+    }
+    .btn-check-avail:hover {
+        background: linear-gradient(135deg, #b8862e, #8B6520);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(200,150,62,0.35);
+    }
+    .btn-add-cart {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #2d6a4f, #1b4332);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-add-cart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45,106,79,0.35);
+    }
+    .btn-booked {
+        width: 100%;
+        padding: 13px;
+        background: #f1f1f1;
+        color: #999;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: not-allowed;
+    }
+    .booked-notice {
+        background: #fff5f5;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #dc2626;
+        font-size: 0.85rem;
+        text-align: center;
+        margin-top: 12px;
+    }
+    .btn-back {
+        display: block;
+        text-align: center;
+        margin-top: 14px;
+        color: #888;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .btn-back:hover { color: #8B4513; }
+
+    /* ── Divider ── */
+    .section-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, #e0d5c5, transparent);
+        margin: 24px 0;
+    }
+
+    /* ── Nights summary ── */
+    .nights-summary {
+        background: linear-gradient(135deg, #fdf6ee, #fef9f3);
+        border: 1px solid #e8d5b7;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        display: none;
+    }
+    .nights-summary.show { display: block; }
+    .nights-summary .row-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #555;
+        margin-bottom: 4px;
+    }
+    .nights-summary .total-row {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        color: #2d2d2d;
+        font-size: 0.95rem;
+        border-top: 1px solid #e8d5b7;
+        padding-top: 8px;
+        margin-top: 6px;
+    }
+
+    @@media (max-width: 768px) {
+        .room-hero { height: 240px; width: 100%; margin: 0; border-radius: 0; }
+        .room-hero-title h1 { font-size: 1.5rem; }
+        .booking-panel { position: static; margin-top: 24px; }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div style="background:#faf8f5; border-bottom:1px solid #ede8e0; padding:12px 0;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="font-size:0.85rem;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" style="color:#8B4513;">Trang Chủ</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Room" asp-action="Rooms" style="color:#8B4513;">Phòng</a></li>
+                <li class="breadcrumb-item active" style="color:#666;">@Model.RoomType.Name</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Hero Image -->
+<div class="room-hero">
+    <img src="~/images/room/room-@(Model.Id).jpg" alt="@Model.RoomType.Name"
+         onerror="this.src='/images/room/room-1.jpg'" />
+    <div class="room-hero-overlay"></div>
+    <div class="room-hero-badge">
+        <i class="fa fa-star me-1" style="color:#f0c060;"></i> Phòng Cao Cấp
+    </div>
+    <div class="room-hero-title">
+        <h1>@Model.RoomType.Name</h1>
+        <div class="price-tag">
+            $@Model.RoomType.PricePerNight <small style="font-size:0.9rem;opacity:0.8;">/đêm</small>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="room-detail-wrap">
+    <div class="row g-4">
+
+        <!-- LEFT: Info -->
+        <div class="col-lg-7">
+
+            <!-- Quick Info Cards -->
+            <div class="info-grid">
+                <div class="info-card">
+                    <i class="fa fa-hashtag"></i>
+                    <div class="label">Số Phòng</div>
+                    <div class="value">@Model.RoomNumber</div>
+                </div>
+                <div class="info-card">
+                    <i class="fa fa-bed"></i>
+                    <div class="label">Loại Phòng</div>
+                    <div class="value">@Model.RoomType.Name</div>
+                </div>
+                <div class="info-card">
+                    <i class="fa fa-dollar"></i>
+                    <div class="label">Giá/Đêm</div>
+                    <div class="value">$@Model.RoomType.PricePerNight</div>
+                </div>
+                <div class="info-card">
+                    <i class="fa fa-check-circle" style="color:@(Model.IsAvailable ? "#2d6a4f" : "#dc2626");"></i>
+                    <div class="label">Tình Trạng</div>
+                    <div class="value" style="color:@(Model.IsAvailable ? "#2d6a4f" : "#dc2626");">
+                        @(Model.IsAvailable ? "Còn Trống" : "Đã Đặt")
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="desc-box">
+                <h5><i class="fa fa-info-circle me-2"></i>Mô Tả Phòng</h5>
+                <p>@(string.IsNullOrEmpty(Model.RoomType.Description)
+                    ? "Phòng được thiết kế sang trọng, tiện nghi đầy đủ, mang đến không gian nghỉ ngơi thoải mái và đẳng cấp cho quý khách."
+                    : Model.RoomType.Description)</p>
+            </div>
+
+            <!-- Amenities -->
+            <div class="desc-box">
+                <h5><i class="fa fa-th-large me-2"></i>Tiện Nghi</h5>
+                <div class="amenity-list">
+                    <span class="amenity-tag"><i class="fa fa-wifi"></i> Wifi Miễn Phí</span>
+                    <span class="amenity-tag"><i class="fa fa-tv"></i> TV Màn Hình Phẳng</span>
+                    <span class="amenity-tag"><i class="fa fa-snowflake-o"></i> Điều Hòa</span>
+                    <span class="amenity-tag"><i class="fa fa-bath"></i> Phòng Tắm Riêng</span>
+                    <span class="amenity-tag"><i class="fa fa-coffee"></i> Minibar</span>
+                    <span class="amenity-tag"><i class="fa fa-lock"></i> Két Sắt</span>
+                    <span class="amenity-tag"><i class="fa fa-phone"></i> Điện Thoại</span>
+                    <span class="amenity-tag"><i class="fa fa-tint"></i> Nước Nóng 24/7</span>
+                </div>
+            </div>
+
+            <!-- Policies -->
+            <div class="desc-box">
+                <h5><i class="fa fa-calendar me-2"></i>Chính Sách</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:36px;height:36px;background:#fdf6ee;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-sign-in" style="color:#c8963e;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:0.75rem;color:#999;text-transform:uppercase;">Nhận Phòng</div>
+                                <div style="font-weight:600;color:#333;">Từ 14:00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:36px;height:36px;background:#fdf6ee;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-sign-out" style="color:#c8963e;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:0.75rem;color:#999;text-transform:uppercase;">Trả Phòng</div>
+                                <div style="font-weight:600;color:#333;">Trước 12:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Booking Panel -->
+        <div class="col-lg-5">
+            <div class="booking-panel">
+                <div class="panel-title">Đặt Phòng Ngay</div>
+                <div class="panel-price">
+                    $@Model.RoomType.PricePerNight
+                    <span>/ đêm</span>
+                </div>
+
+                <!-- Check Availability Form -->
+                <form method="get" asp-action="Details" id="checkForm">
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="date-group">
+                                <label>Nhận Phòng</label>
+                                <input type="date" name="checkIn" id="checkIn"
+                                       value="@ViewBag.CheckIn" required />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="date-group">
+                                <label>Trả Phòng</label>
+                                <input type="date" name="checkOut" id="checkOut"
+                                       value="@ViewBag.CheckOut" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nights Summary (hiện khi chọn đủ ngày) -->
+                    <div class="nights-summary" id="nightsSummary">
+                        <div class="row-item">
+                            <span id="nightsLabel">0 đêm</span>
+                            <span id="nightsCalc">$0</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tổng dự kiến</span>
+                            <span id="totalCalc" style="color:#c8963e;">$0</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-check-avail mb-3">
+                        <i class="fa fa-search me-2"></i>Kiểm Tra Phòng Trống
+                    </button>
+                </form>
+
+                <div class="section-divider"></div>
+
+                @if (ViewBag.CheckIn != null && ViewBag.CheckOut != null)
+                {
+                    @if (isBooked)
+                    {
+                        <button class="btn-booked" disabled>
+                            <i class="fa fa-times-circle me-2"></i>Phòng Đã Được Đặt
+                        </button>
+                        <div class="booked-notice">
+                            <i class="fa fa-exclamation-circle me-1"></i>
+                            Phòng này đã được đặt cho ngày bạn chọn. Vui lòng chọn ngày khác.
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                            <input type="hidden" name="RoomId" value="@Model.Id" />
+                            <input type="hidden" name="RoomName" value="@Model.RoomType.Name" />
+                            <input type="hidden" name="PricePerNight" value="@Model.RoomType.PricePerNight" />
+                            <input type="hidden" name="CheckIn" value="@ViewBag.CheckIn" />
+                            <input type="hidden" name="CheckOut" value="@ViewBag.CheckOut" />
+                            <button type="submit" class="btn-add-cart">
+                                <i class="fa fa-shopping-cart me-2"></i>Thêm Vào Giỏ Hàng
+                            </button>
+                        </form>
+                    }
+                }
+                else
+                {
+                    <div style="text-align:center;color:#aaa;font-size:0.85rem;padding:8px 0;">
+                        <i class="fa fa-calendar-o me-1"></i>
+                        Chọn ngày để kiểm tra phòng trống
+                    </div>
+                }
+
+                <a href="/Room/Rooms" class="btn-back">
+                    <i class="fa fa-arrow-left me-1"></i> Quay lại danh sách phòng
+                </a>
+
+                <!-- Trust badges -->
+                <div class="section-divider"></div>
+                <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+                    <div style="text-align:center;font-size:0.75rem;color:#999;">
+                        <i class="fa fa-shield" style="color:#2d6a4f;font-size:1.2rem;display:block;margin-bottom:4px;"></i>
+                        Thanh toán an toàn
+                    </div>
+                    <div style="text-align:center;font-size:0.75rem;color:#999;">
+                        <i class="fa fa-clock-o" style="color:#c8963e;font-size:1.2rem;display:block;margin-bottom:4px;"></i>
+                        Xác nhận ngay
+                    </div>
+                    <div style="text-align:center;font-size:0.75rem;color:#999;">
+                        <i class="fa fa-headphones" style="color:#3b82f6;font-size:1.2rem;display:block;margin-bottom:4px;"></i>
+                        Hỗ trợ 24/7
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const pricePerNight = @Model.RoomType.PricePerNight;
+    const checkInEl    = document.getElementById('checkIn');
+    const checkOutEl   = document.getElementById('checkOut');
+    const summary      = document.getElementById('nightsSummary');
+    const nightsLabel  = document.getElementById('nightsLabel');
+    const nightsCalc   = document.getElementById('nightsCalc');
+    const totalCalc    = document.getElementById('totalCalc');
+
+    function todayYMD() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    function updateSummary() {
+        if (!checkInEl.value || !checkOutEl.value) {
+            summary.classList.remove('show');
+            return;
+        }
+        const ci = new Date(checkInEl.value);
+        const co = new Date(checkOutEl.value);
+        const nights = Math.round((co - ci) / 86400000);
+        if (nights <= 0) { summary.classList.remove('show'); return; }
+
+        const total = nights * pricePerNight;
+        nightsLabel.textContent = `${nights} đêm × $${pricePerNight}`;
+        nightsCalc.textContent  = `$${(nights * pricePerNight).toFixed(2)}`;
+        totalCalc.textContent   = `$${total.toFixed(2)}`;
+        summary.classList.add('show');
+    }
+
+    // Set min dates
+    checkInEl.setAttribute('min', todayYMD());
+    checkOutEl.setAttribute('min', todayYMD());
+
+    checkInEl.addEventListener('change', function () {
+        if (this.value) {
+            const next = new Date(this.value);
+            next.setDate(next.getDate() + 1);
+            checkOutEl.setAttribute('min', next.toISOString().split('T')[0]);
+            if (checkOutEl.value && checkOutEl.value <= this.value) checkOutEl.value = '';
+        }
+        updateSummary();
+    });
+
+    checkOutEl.addEventListener('change', updateSummary);
+
+    // Init summary if dates already set
+    updateSummary();
+
+    // Form validation
+    document.getElementById('checkForm').addEventListener('submit', function (e) {
+        const today = todayYMD();
+        if (checkInEl.value < today) {
+            e.preventDefault();
+            alert('Ngày nhận phòng không thể trước ngày hôm nay!');
+            return;
+        }
+        if (checkOutEl.value <= checkInEl.value) {
+            e.preventDefault();
+            alert('Ngày trả phòng phải sau ngày nhận phòng!');
+        }
+    });
+</script>
+}

@@ -1,0 +1,360 @@
+﻿@model IEnumerable<Bookify.Data.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Quản Lý Đặt Phòng";
+    Layout = "_Layout";
+
+    int total      = Model.Count();
+    int pending    = Model.Count(b => b.Status == "Pending" || b.Status == "Chờ thanh toán tại khách sạn");
+    int approved   = Model.Count(b => b.Status == "Đã Duyệt" || b.Status!.Contains("thanh toán"));
+    int rejected   = Model.Count(b => b.Status == "Đã Từ Chối");
+    decimal revenue = Model.Where(b => b.Status!.Contains("thanh toán") || b.Status == "Đã Duyệt")
+                           .Sum(b => b.TotalAmount);
+}
+
+<style>
+    .admin-wrap {
+        background: #f4f6f9;
+        min-height: 100vh;
+        padding: 32px 0 60px;
+    }
+
+    /* ── Stats cards ── */
+    .stat-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: 1px solid #eee;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    .stat-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; flex-shrink: 0;
+    }
+    .stat-card .stat-num  { font-size: 1.7rem; font-weight: 800; line-height: 1; color: #1a1a2e; }
+    .stat-card .stat-lbl  { font-size: 0.78rem; color: #999; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Table card ── */
+    .table-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+    .table-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid #f0ece6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .table-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1a1a2e;
+    }
+
+    /* ── Table ── */
+    .booking-table { width: 100%; border-collapse: collapse; }
+    .booking-table thead tr {
+        background: linear-gradient(135deg, #8B4513, #a0522d);
+    }
+    .booking-table thead th {
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 18px;
+        white-space: nowrap;
+    }
+    .booking-table tbody tr {
+        border-bottom: 1px solid #f5f5f5;
+        transition: background 0.15s;
+    }
+    .booking-table tbody tr:hover { background: #fdf8f4; }
+    .booking-table tbody tr:last-child { border-bottom: none; }
+    .booking-table td {
+        padding: 14px 18px;
+        font-size: 0.88rem;
+        color: #444;
+        vertical-align: middle;
+    }
+
+    /* ── ID badge ── */
+    .id-badge {
+        background: #f4f6f9;
+        color: #555;
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid #e8e8e8;
+    }
+
+    /* ── Status badges ── */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .status-pill.pending    { background: #fff8e1; color: #f59e0b; border: 1px solid #fde68a; }
+    .status-pill.approved   { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .status-pill.rejected   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .status-pill.cash       { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+    .status-pill.default    { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+
+    /* ── Action buttons ── */
+    .action-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .btn-act {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-act:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
+    .btn-view     { background: #eff6ff; color: #3b82f6; }
+    .btn-view:hover { background: #dbeafe; color: #2563eb; }
+    .btn-approve  { background: #ecfdf5; color: #059669; }
+    .btn-approve:hover { background: #d1fae5; color: #047857; }
+    .btn-reject   { background: #fff8e1; color: #d97706; }
+    .btn-reject:hover { background: #fef3c7; color: #b45309; }
+    .btn-delete   { background: #fef2f2; color: #dc2626; }
+    .btn-delete:hover { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Empty state ── */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #aaa;
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 16px; display: block; }
+
+    /* ── Alert ── */
+    .alert-custom {
+        border-radius: 12px;
+        padding: 14px 20px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .alert-success-custom { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .alert-danger-custom  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+</style>
+
+<div class="admin-wrap">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <h3 class="mb-1 fw-bold" style="color:#1a1a2e;">Quản Lý Đặt Phòng</h3>
+                <p class="text-muted mb-0" style="font-size:0.85rem;">Xem và quản lý tất cả đặt phòng của khách hàng</p>
+            </div>
+            <a asp-controller="Admin" asp-action="Index"
+               style="background:#f4f6f9;color:#555;padding:9px 18px;border-radius:10px;font-size:0.85rem;font-weight:600;text-decoration:none;border:1px solid #e5e7eb;">
+                <i class="fa fa-arrow-left me-1"></i> Bảng Điều Khiển
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert-custom alert-success-custom">
+                <i class="fa fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert-custom alert-danger-custom">
+                <i class="fa fa-times-circle"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#eff6ff;">
+                        <i class="fa fa-list" style="color:#3b82f6;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-num">@total</div>
+                        <div class="stat-lbl">Tổng Đặt Phòng</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#fff8e1;">
+                        <i class="fa fa-clock-o" style="color:#f59e0b;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-num">@pending</div>
+                        <div class="stat-lbl">Chờ Duyệt</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#ecfdf5;">
+                        <i class="fa fa-check-circle" style="color:#059669;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-num">@approved</div>
+                        <div class="stat-lbl">Đã Xử Lý</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#fdf6ee;">
+                        <i class="fa fa-dollar" style="color:#c8963e;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-num" style="font-size:1.3rem;">$@revenue.ToString("0.00")</div>
+                        <div class="stat-lbl">Doanh Thu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h5><i class="fa fa-calendar-check-o me-2" style="color:#8B4513;"></i>Danh Sách Đặt Phòng</h5>
+                <span style="background:#f4f6f9;color:#666;padding:5px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;">
+                    @total đặt phòng
+                </span>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="fa fa-calendar-times-o"></i>
+                    <p class="fw-semibold mb-1">Chưa có đặt phòng nào</p>
+                    <small>Các đặt phòng của khách hàng sẽ hiển thị tại đây</small>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="booking-table">
+                        <thead>
+                            <tr>
+                                <th>Mã ĐP</th>
+                                <th>Ngày Đặt</th>
+                                <th>Tổng Tiền</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in Model.OrderByDescending(x => x.CreatedAt))
+                            {
+                                string pillClass = b.Status switch
+                                {
+                                    "Pending"                       => "pending",
+                                    "Đã Duyệt"                      => "approved",
+                                    "Đã Từ Chối"                    => "rejected",
+                                    "Chờ thanh toán tại khách sạn"  => "cash",
+                                    var s when s != null && s.Contains("thanh toán") => "approved",
+                                    _                               => "default"
+                                };
+
+                                string pillIcon = pillClass switch
+                                {
+                                    "pending"  => "fa-clock-o",
+                                    "approved" => "fa-check-circle",
+                                    "rejected" => "fa-times-circle",
+                                    "cash"     => "fa-money",
+                                    _          => "fa-circle"
+                                };
+
+                                <tr>
+                                    <td><span class="id-badge">#@b.Id</span></td>
+                                    <td>
+                                        <div style="font-weight:600;color:#333;">@b.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        <div style="font-size:0.75rem;color:#aaa;">@b.CreatedAt.ToString("HH:mm")</div>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight:700;color:#1a1a2e;">$@b.TotalAmount.ToString("0.00")</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill @pillClass">
+                                            <i class="fa @pillIcon"></i>
+                                            @b.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-group">
+                                            <a asp-controller="Bookings" asp-action="Details" asp-route-id="@b.Id"
+                                               class="btn-act btn-view">
+                                                <i class="fa fa-eye"></i> Xem
+                                            </a>
+
+                                            @if (b.Status == "Pending" || b.Status == "Chờ thanh toán tại khách sạn")
+                                            {
+                                                <form asp-controller="Bookings" asp-action="ApproveBooking"
+                                                      asp-route-id="@b.Id" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-act btn-approve"
+                                                            onclick="return confirm('Duyệt đặt phòng #@b.Id?')">
+                                                        <i class="fa fa-check"></i> Duyệt
+                                                    </button>
+                                                </form>
+                                                <form asp-controller="Bookings" asp-action="RejectBooking"
+                                                      asp-route-id="@b.Id" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-act btn-reject"
+                                                            onclick="return confirm('Từ chối đặt phòng #@b.Id?')">
+                                                        <i class="fa fa-times"></i> Từ Chối
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            <a asp-controller="Bookings" asp-action="DeleteBooking" asp-route-id="@b.Id"
+                                               class="btn-act btn-delete"
+                                               onclick="return confirm('Xóa đặt phòng #@b.Id?')">
+                                                <i class="fa fa-trash"></i> Xóa
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

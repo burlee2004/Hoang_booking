@@ -1,0 +1,172 @@
+﻿@model Bookify.Web.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Hồ Sơ Cá Nhân";
+    Layout = "_Layout";
+    var themeColor = "#8B4513";
+}
+
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang Chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Hồ Sơ</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Chỉnh sửa hồ sơ -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Chỉnh Sửa Hồ Sơ</h5>
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+
+                    <form asp-action="Update" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ProfileId" value="@Model.ProfileId" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Họ và Tên</label>
+                            <input name="FullName" class="form-control" value="@Model.FullName" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Địa Chỉ</label>
+                            <input name="Address" class="form-control" value="@Model.Address" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ngày Sinh</label>
+                            <input type="date" name="BirthDate" class="form-control"
+                                   value="@(Model.BirthDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email (Chỉ Đọc)</label>
+                            <input class="form-control" value="@Model.Email" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Số Điện Thoại</label>
+                            <input name="PhoneNumber" class="form-control" value="@Model.PhoneNumber" />
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="submit" class="btn" style="background:@themeColor; color:#fff;">
+                                <i class="fa fa-save me-1"></i> Lưu Thay Đổi
+                            </button>
+                            <a asp-action="ChangePassword" class="btn btn-outline-secondary">
+                                <i class="fa fa-lock me-1"></i> Đổi Mật Khẩu
+                            </a>
+                            <a asp-action="DeleteAccount" class="btn btn-outline-danger">
+                                <i class="fa fa-trash me-1"></i> Xóa Tài Khoản
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lịch sử đặt phòng -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Lịch Sử Đặt Phòng</h5>
+
+                    <form class="mb-3" asp-action="Index" method="get">
+                        <div class="input-group">
+                            <input name="search" value="@Model.SearchTerm" class="form-control"
+                                   placeholder="Tìm theo tên phòng hoặc loại phòng" />
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fa fa-search"></i> Tìm
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (!Model.Reservations.Any())
+                    {
+                        <div class="text-muted text-center py-3">
+                            <i class="fa fa-calendar-times-o fa-2x mb-2"></i>
+                            <p>Chưa có đặt phòng nào.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mã ĐP</th>
+                                        <th>Ngày Đặt</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Reservations)
+                                    {
+                                        <tr>
+                                            <td>#@item.Id</td>
+                                            <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                            <td>$@item.TotalAmount</td>
+                                            <td>
+                                                <span class="badge @(item.Status?.ToString() == "Confirmed" ? "bg-success" : "bg-warning text-dark")">
+                                                    @(item.Status?.ToString() == "Confirmed" ? "Đã Xác Nhận" : item.Status?.ToString())
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Bookings" asp-action="Details" asp-route-id="@item.Id"
+                                                   class="btn btn-info btn-sm">
+                                                    <i class="fa fa-eye"></i> Xem
+                                                </a>
+                                                <a asp-controller="Bookings" asp-action="DeleteBooking" asp-route-id="@item.Id"
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
+                                                    <i class="fa fa-trash"></i> Xóa
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Phân trang -->
+                        <nav aria-label="Phân trang">
+                            <ul class="pagination justify-content-center mt-3">
+                                @{
+                                    var prevDisabled = Model.PageIndex <= 1 ? "disabled" : "";
+                                    var nextDisabled = Model.PageIndex >= Model.TotalPages ? "disabled" : "";
+                                }
+                                <li class="page-item @prevDisabled">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex - 1, search = Model.SearchTerm })">Trước</a>
+                                </li>
+
+                                @for (int p = 1; p <= Model.TotalPages; p++)
+                                {
+                                    var active = p == Model.PageIndex ? "active" : "";
+                                    <li class="page-item @active">
+                                        <a class="page-link" href="@Url.Action("Index", new { page = p, search = Model.SearchTerm })">@p</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @nextDisabled">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex + 1, search = Model.SearchTerm })">Tiếp</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

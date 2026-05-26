@@ -1,0 +1,166 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentArea = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+}
+
+<div class="offcanvas-menu-overlay"></div>
+<div class="canvas-open">
+    <i class="icon_menu"></i>
+</div>
+<div class="offcanvas-menu-wrapper">
+    <div class="canvas-close">
+        <i class="icon_close"></i>
+    </div>
+    <div class="header-configure-area"></div>
+    <nav class="mainmenu mobile-menu">
+        <ul>
+            <li class="@(currentController == "Home" ? "active" : "")"><a asp-controller="Home" asp-action="Index">Trang Chủ</a></li>
+            <li class="@(currentController == "Room" ? "active" : "")"><a asp-controller="Room" asp-action="Rooms">Phòng</a></li>
+            <li class="@(currentController == "About" ? "active" : "")"><a asp-controller="About" asp-action="AboutUs">Giới Thiệu</a></li>
+            <li class="@(currentController == "Contact" ? "active" : "")"><a asp-controller="Contact" asp-action="Contact">Liên Hệ</a></li>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <li><a asp-controller="Admin" asp-action="Index">Bảng Điều Khiển</a></li>
+            }
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <li class="submenu">
+                    <a href="#"><i class="fa fa-user"></i> Tài Khoản</a>
+                    <ul class="dropdown-list">
+                        <li>
+                            <a asp-controller="Profile" asp-action="Index"><i class="fa fa-id-card"></i> Hồ Sơ Cá Nhân</a>
+                        </li>
+                        @if (!User.IsInRole("Admin"))
+                        {
+                            <li>
+                                <a asp-controller="Contact" asp-action="MyMessages"><i class="fa fa-envelope"></i> Hộp Thư Của Tôi</a>
+                            </li>
+                        }
+                        <li>
+                            <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0 p-0">
+                                <button type="submit" class="btn btn-link dropdown-item text-dark text-start" style="text-decoration:none;"><i class="fa fa-sign-out"></i> Đăng Xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                @if (!User.IsInRole("Admin"))
+                {
+                    @await Component.InvokeAsync("CartDropdown")
+                }
+            }
+            else
+            {
+                <li><a asp-area="Identity" asp-page="/Account/Login">Đăng Nhập</a></li>
+                <li><a asp-area="Identity" asp-page="/Account/Register">Đăng Ký</a></li>
+            }
+        </ul>
+    </nav>
+    <div id="mobile-menu-wrap"></div>
+    <div class="top-social">
+        <a href="#"><i class="fa fa-facebook"></i></a>
+        <a href="#"><i class="fa fa-twitter"></i></a>
+        <a href="#"><i class="fa fa-tripadvisor"></i></a>
+        <a href="#"><i class="fa fa-instagram"></i></a>
+    </div>
+    <ul class="top-widget">
+        <li><i class="fa fa-phone"></i> 034 779 3976</li>
+    </ul>
+</div>
+<header class="header-section shadow-sm bg-white sticky-top">
+    <div class="menu-item py-2">
+        <div class="container-fluid px-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-3 d-flex align-items-center">
+                    <div class="logo">
+                        <a asp-controller="Home" asp-action="Index">
+                            <img src="~/images/logo1.png" alt="logo" class="img-fluid" style="max-height: 80px; width: auto;" />
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="nav-menu d-flex justify-content-end align-items-center">
+                        <nav class="mainmenu text-end me-4">
+                            <ul class="mb-0">
+                                <li class="@(currentController == "Home" ? "active" : "")">
+                                    <a asp-controller="Home" asp-action="Index" class="fw-bold text-uppercase">Trang Chủ</a>
+                                </li>
+                                <li class="@(currentController == "Room" ? "active" : "")">
+                                    <a asp-controller="Room" asp-action="Rooms" class="fw-bold text-uppercase">Phòng</a>
+                                </li>
+                                <li class="@(currentController == "About" ? "active" : "")">
+                                    <a asp-controller="About" asp-action="AboutUs" class="fw-bold text-uppercase">Giới Thiệu</a>
+                                </li>
+                                <li class="@(currentController == "Contact" ? "active" : "")">
+                                    <a asp-controller="Contact" asp-action="Contact" class="fw-bold text-uppercase">Liên Hệ</a>
+                                </li>
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li class="@(currentController == "Admin" ? "active" : "")">
+                                        <a asp-controller="Admin" asp-action="Index" class="text-danger fw-bold text-uppercase"><i class="fa fa-cog"></i> Bảng Điều Khiển</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+
+                        <div class="d-flex align-items-center">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                @if (!User.IsInRole("Admin"))
+                                {
+                                    <div class="me-3 mt-1 d-flex gap-2">
+                                        @await Component.InvokeAsync("CartDropdown")
+                                        @await Component.InvokeAsync("MailboxBadge")
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="me-3 mt-1">
+                                        @await Component.InvokeAsync("AdminMailBadge")
+                                    </div>
+                                }
+
+                                <div class="dropdown @(currentController == "Profile" ? "active" : "") ms-2">
+                                    <a href="#" class="dropdown-toggle text-dark text-decoration-none fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa fa-user-circle-o fs-5 text-primary"></i> Tài Khoản
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 rounded-3">
+                                        <li>
+                                            <a class="dropdown-item py-2" asp-controller="Profile" asp-action="Index">
+                                                <i class="fa fa-id-card me-2 text-muted"></i> Hồ Sơ Cá Nhân
+                                            </a>
+                                        </li>
+                                        @if (!User.IsInRole("Admin"))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-controller="Contact" asp-action="MyMessages">
+                                                    <i class="fa fa-envelope me-2 text-muted"></i> Hộp Thư Của Tôi
+                                                </a>
+                                            </li>
+                                        }
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0 p-0">
+                                                <button type="submit" class="dropdown-item py-2 text-danger fw-bold">
+                                                    <i class="fa fa-sign-out me-2"></i> Đăng Xuất
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                @await Html.PartialAsync("_LoginPartial")
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,14 @@
+@model int
+<li class="nav-item">
+    <a asp-controller="ContactAdmin" asp-action="Index"
+       class="nav-link position-relative" title="Tin nhắn liên hệ">
+        <i class="fa fa-envelope fa-lg" style="color:#8B4513;"></i>
+        @if (Model > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm"
+                  style="font-size:.72rem;">
+                @Model
+            </span>
+        }
+    </a>
+</li>

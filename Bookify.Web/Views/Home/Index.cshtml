@@ -1,0 +1,368 @@
+﻿@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<style>
+    /* KHỐI FORM ĐẶT PHÒNG */
+    .booking-form-wrap {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.2);
+        margin-top: -100px;
+        position: relative;
+        z-index: 9;
+        border-top: 4px solid #dfa974;
+    }
+
+    /* Tinh chỉnh ô input */
+    .booking-form .form-control {
+        border: 1px solid #e1e1e1 !important;
+        border-radius: 6px;
+        background-color: #fcfcfc !important;
+        transition: border-color 0.3s;
+    }
+
+        .booking-form .form-control:focus {
+            border-color: #dfa974 !important;
+            box-shadow: none;
+        }
+
+    /* NÚT BẤM ĐẶT PHÒNG TỐI ƯU LẠI */
+    .btn-booking {
+        background-color: #dfa974;
+        color: #ffffff;
+        font-weight: 700;
+        border-radius: 6px;
+        border: 2px solid #dfa974;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-booking:hover {
+            background-color: #c9945c;
+            border-color: #c9945c;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(223, 169, 116, 0.4);
+        }
+
+    .hero-text h1 {
+        font-size: 72px;
+        line-height: 1.1;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+    }
+
+    /* KHỐI DỊCH VỤ CẢI THIỆN HIỆU ỨNG */
+    .service-item {
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 40px 25px;
+        transition: all 0.4s ease;
+        height: 100%;
+    }
+
+        .service-item:hover {
+            border-color: #dfa974;
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-8px);
+        }
+
+        .service-item i {
+            color: #dfa974;
+            font-size: 55px;
+            margin-bottom: 25px;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .service-item:hover i {
+            transform: scale(1.1);
+        }
+
+    /* KHỐI PHÒNG (ROOMS) */
+    .hp-room-item {
+        overflow: hidden;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+        .hp-room-item:hover .hr-text {
+            bottom: 20px;
+        }
+
+    .hr-text {
+        background: rgba(17, 17, 17, 0.85);
+        padding: 25px 20px !important;
+        transition: all 0.4s ease;
+        border-radius: 8px;
+        margin: 0 10px;
+        bottom: -20px;
+    }
+
+        .hr-text h2 {
+            color: #dfa974;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+    .primary-btn {
+        background: #dfa974;
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        padding: 14px 35px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .primary-btn:hover {
+            background: #c9945c;
+            color: #fff;
+        }
+</style>
+
+<section class="hero-section">
+    <div class="container">
+        @if (User.Identity.IsAuthenticated && TempData["SuccessMessage"] != null)
+        {
+            <div id="successAlert" class="alert alert-success text-center mt-3 shadow-sm" role="alert" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999; min-width: 300px; border-radius: 8px;">
+                <i class="fa fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            </div>
+            <script>
+                setTimeout(function () {
+                    const alertBox = document.getElementById('successAlert');
+                    if (alertBox) {
+                        alertBox.style.transition = 'all 0.6s ease';
+                        alertBox.style.opacity = '0';
+                        setTimeout(() => alertBox.remove(), 600);
+                    }
+                }, 3000);
+            </script>
+        }
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="hero-text text-center text-white pb-5">
+                    <span class="text-uppercase fw-bold" style="letter-spacing: 4px; color: #dfa974;">Luxury Hotel & Resort</span>
+                    <h1 class="mt-3 mb-4">Nile Horizon <br>Tinh Hoa Nghỉ Dưỡng</h1>
+                    <a href="#about-section" class="primary-btn mt-2 shadow">Khám Phá Ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="booking-form-wrap">
+                    <div class="booking-form">
+                        <h4 class="mb-4 text-center fw-bold text-dark">Tìm Kiếm Phòng Trống</h4>
+                        <form asp-controller="RoomAvalibality" asp-action="CheckAvailability" method="get">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label for="date-in" class="text-muted small fw-bold mb-2">NGÀY NHẬN PHÒNG</label>
+                                    <input type="date" name="checkIn" id="date-in" class="form-control px-3" style="height: 50px;" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="date-out" class="text-muted small fw-bold mb-2">NGÀY TRẢ PHÒNG</label>
+                                    <input type="date" name="checkOut" id="date-out" class="form-control px-3" style="height: 50px;" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-booking w-100" style="height: 50px;">Kiểm Tra Ngay</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-slider owl-carousel">
+        <div class="hs-item set-bg" data-setbg="@Url.Content("~/images/hero/hero-1.jpg")"></div>
+        <div class="hs-item set-bg" data-setbg="@Url.Content("~/images/hero/hero-2.jpg")"></div>
+        <div class="hs-item set-bg" data-setbg="@Url.Content("~/images/hero/hero-3.jpg")"></div>
+    </div>
+</section>
+
+<section class="aboutus-section spad" id="about-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="about-text pe-lg-4">
+                    <div class="section-title">
+                        <span class="fw-bold text-uppercase" style="color: #dfa974; letter-spacing: 2px;">Câu Chuyện Của Chúng Tôi</span>
+                        <h2 class="mt-3 mb-4">Khách Sạn<br />Nile Horizon</h2>
+                    </div>
+                    <p class="f-para text-secondary lh-lg">
+                        Chào mừng đến với Nile Horizon — nơi sự thoải mái gặp gỡ sự sang trọng.
+                        Tọa lạc tại trung tâm thành phố, khách sạn chúng tôi mang đến bầu không khí thư giãn,
+                        tiện nghi hiện đại và dịch vụ xuất sắc.
+                    </p>
+                    <p class="text-muted">Chúng tôi cam kết mang lại trải nghiệm cá nhân hóa, từ bữa sáng tinh tế đến dịch vụ chăm sóc khách hàng 24/7.</p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about-pic mt-5 mt-lg-0">
+                    <div class="row">
+                        <div class="col-sm-6 mb-4 mb-sm-0">
+                            <img src="~/images/about/about-1.jpg" alt="Về chúng tôi 1" class="img-fluid rounded-3 shadow">
+                        </div>
+                        <div class="col-sm-6">
+                            <img src="~/images/about/about-2.jpg" alt="Về chúng tôi 2" class="img-fluid rounded-3 shadow mt-sm-5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="services-section spad" style="background-color: #f8f9fa;">
+    <div class="container text-center">
+        <div class="section-title">
+            <span class="fw-bold text-uppercase" style="color: #dfa974; letter-spacing: 2px;">Tiện Nghi Đẳng Cấp</span>
+            <h2 class="mt-3">Dịch Vụ Của Chúng Tôi</h2>
+        </div>
+        <div class="row mt-5">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-item">
+                    <i class="flaticon-036-parking"></i>
+                    <h4 class="fw-bold mb-3">Lên Kế Hoạch Du Lịch</h4>
+                    <p class="text-muted mb-0">Hỗ trợ lên kế hoạch trọn gói cho chuyến đi của bạn một cách hoàn hảo nhất.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-item">
+                    <i class="flaticon-033-dinner"></i>
+                    <h4 class="fw-bold mb-3">Dịch Vụ Ẩm Thực</h4>
+                    <p class="text-muted mb-0">Tinh hoa ẩm thực từ các đầu bếp hàng đầu thế giới với nguyên liệu thượng hạng.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-item">
+                    <i class="flaticon-026-bed"></i>
+                    <h4 class="fw-bold mb-3">Trông Trẻ</h4>
+                    <p class="text-muted mb-0">Yên tâm tận hưởng kỳ nghỉ với dịch vụ chăm sóc bé chuyên nghiệp, an toàn.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="hp-room-section spad">
+    <div class="container-fluid px-lg-5">
+        <div class="section-title text-center mb-5">
+            <span class="fw-bold text-uppercase" style="color: #dfa974; letter-spacing: 2px;">Không Gian Nghỉ Dưỡng</span>
+            <h2 class="mt-3">Các Loại Phòng</h2>
+        </div>
+        <div class="hp-room-items">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 px-2">
+                    <div class="hp-room-item set-bg shadow-sm" data-setbg="@Url.Content("~/images/room/room-b1.jpg")">
+                        <div class="hr-text text-white">
+                            <h3 class="fw-bold">Phòng Đôi</h3>
+                            <h2>199$<span>/Đêm</span></h2>
+                            <ul class="list-unstyled mt-3 small opacity-75">
+                                <li class="mb-2"><i class="fa fa-check text-warning me-2"></i>30 m² - Tối đa 5 người</li>
+                                <li><i class="fa fa-check text-warning me-2"></i>Giường King - Wifi - TV</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 px-2">
+                    <div class="hp-room-item set-bg shadow-sm" data-setbg="@Url.Content("~/images/room/room-b2.jpg")">
+                        <div class="hr-text text-white">
+                            <h3 class="fw-bold">King Cao Cấp</h3>
+                            <h2>159$<span>/Đêm</span></h2>
+                            <ul class="list-unstyled mt-3 small opacity-75">
+                                <li class="mb-2"><i class="fa fa-check text-warning me-2"></i>30 m² - Tối đa 5 người</li>
+                                <li><i class="fa fa-check text-warning me-2"></i>Giường King - View Biển</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 px-2">
+                    <div class="hp-room-item set-bg shadow-sm" data-setbg="@Url.Content("~/images/room/room-b3.jpg")">
+                        <div class="hr-text text-white">
+                            <h3 class="fw-bold">Phòng Deluxe</h3>
+                            <h2>198$<span>/Đêm</span></h2>
+                            <ul class="list-unstyled mt-3 small opacity-75">
+                                <li class="mb-2"><i class="fa fa-check text-warning me-2"></i>35 m² - Tối đa 4 người</li>
+                                <li><i class="fa fa-check text-warning me-2"></i>Giường Đôi - Bồn Tắm</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 px-2">
+                    <div class="hp-room-item set-bg shadow-sm" data-setbg="@Url.Content("~/images/room/room-b4.jpg")">
+                        <div class="hr-text text-white">
+                            <h3 class="fw-bold">Phòng Gia Đình</h3>
+                            <h2>299$<span>/Đêm</span></h2>
+                            <ul class="list-unstyled mt-3 small opacity-75">
+                                <li class="mb-2"><i class="fa fa-check text-warning me-2"></i>50 m² - Tối đa 6 người</li>
+                                <li><i class="fa fa-check text-warning me-2"></i>2 Phòng Ngủ - Bếp Mini</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            function todayYMD() {
+                const d = new Date();
+                return d.toISOString().split('T')[0];
+            }
+
+            const checkInInputs = document.querySelectorAll("input[name='checkIn']");
+            const checkOutInputs = document.querySelectorAll("input[name='checkOut']");
+
+            checkInInputs.forEach(function (inp) {
+                try { inp.setAttribute('min', todayYMD()); } catch (e) { }
+                inp.addEventListener('change', function () {
+                    const form = inp.closest('form');
+                    const co = form ? form.querySelector("input[name='checkOut']") : null;
+                    if (co && inp.value) {
+                        const ciDate = new Date(inp.value);
+                        ciDate.setDate(ciDate.getDate() + 1);
+                        const minCo = ciDate.toISOString().split('T')[0];
+                        co.setAttribute('min', minCo);
+                        if (co.value && co.value < minCo) co.value = "";
+                    }
+                }, { passive: true });
+            });
+
+            checkOutInputs.forEach(function (co) {
+                try { co.setAttribute('min', todayYMD()); } catch (e) { }
+            });
+
+            const forms = new Set();
+            checkInInputs.forEach(i => { if (i.closest('form')) forms.add(i.closest('form')); });
+            forms.forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    const ci = form.querySelector("input[name='checkIn']");
+                    const co = form.querySelector("input[name='checkOut']");
+                    const today = todayYMD();
+                    if (!ci || !co) return;
+                    if (ci.value && ci.value < today) {
+                        e.preventDefault();
+                        alert("Ngày nhận phòng không thể trước ngày hôm nay!");
+                        return;
+                    }
+                    if (ci.value && co.value && co.value <= ci.value) {
+                        e.preventDefault();
+                        alert("Ngày trả phòng phải sau ngày nhận phòng!");
+                    }
+                }, { passive: false });
+            });
+        });
+    </script>
+}
