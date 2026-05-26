@@ -120,7 +120,7 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
-    var adminEmail = "admin@bookify.com";
+    var adminEmail = "admin@123.com";
     var adminPass = "Admin@123";
     var admin = await userManager.FindByEmailAsync(adminEmail);
     if (admin == null)
