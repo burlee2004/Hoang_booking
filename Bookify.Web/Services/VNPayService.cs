@@ -68,7 +68,7 @@ namespace Bookify.Web.Services
                 ["vnp_Version"]    = "2.1.0",
             };
 
-            // Theo PHP demo chính thức:
+            
             //   hashdata += urlencode(key) + "=" + urlencode(value)
             //   query    += urlencode(key) + "=" + urlencode(value)
             var hashData  = new StringBuilder();
