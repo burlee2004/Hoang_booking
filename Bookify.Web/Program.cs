@@ -19,6 +19,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
+// THÊM ĐOẠN NÀY ĐỂ GIỮ LOGIN KHI TỪ VNPAY TRỞ VỀ:
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 // ✅ Repositories
 builder.Services.AddScoped<RoomRepo>();
 builder.Services.AddScoped<RoomTypeRepo>();
@@ -47,6 +53,10 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(60); // مدة تخزين الـ cart في الجلسة
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+
+    // THÊM 2 DÒNG NÀY ĐỂ GIỮ SESSION:
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // read stripe keys
