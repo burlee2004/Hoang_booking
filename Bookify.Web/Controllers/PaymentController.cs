@@ -104,7 +104,7 @@ namespace Bookify.Web.Controllers
             });
 
             reservation.Status = "Chờ thanh toán tại khách sạn";
-            await SendConfirmationAndMessage(reservation.Id, "Tiền mặt", amount);
+            await SendConfirmationAndMessage(reservation.Id, "Tiền mặt", amount * 24000m);
 
             HttpContext.Session.Remove("ReservationCart");
             return RedirectToAction("Success", new { reservationId = reservation.Id });
@@ -292,12 +292,12 @@ namespace Bookify.Web.Controllers
             // Lấy email khách hàng (Do Identity lưu Email vào Name)
             string userEmail = User.Identity?.Name ?? "guest";
 
-            // 1. Lưu tin nhắn vào CSDL (Mục MyMessages của khách)
+            // 1. SỬA LẠI THÊM CHỮ "VNĐ" Ở DÒNG NÀY
             var sysMessage = new ContactMessage
             {
                 FullName = "Hệ thống Hoang Booking",
                 Email = "noreply@hoangbooking.somee.com",
-                Message = $"CHÚC MỪNG: Bạn đã đặt phòng thành công (Mã đơn: #{reservationId}). Tổng thanh toán: {amount:N0} VND qua {method}.",
+                Message = $"CHÚC MỪNG: Bạn đã đặt phòng thành công (Mã đơn: #{reservationId}). Tổng thanh toán: {amount:N0} VNĐ qua {method}.",
                 UserId = userEmail,
                 SentAt = DateTime.UtcNow,
                 IsRead = false,
@@ -309,10 +309,11 @@ namespace Bookify.Web.Controllers
             if (userEmail != "guest")
             {
                 string subject = $"Hoang Booking - Xác nhận đơn đặt phòng #{reservationId}";
+                // 3. SỬA LẠI THÊM CHỮ "VNĐ" Ở DÒNG TỔNG TIỀN NÀY NỮA LÀ XONG
                 string body = $"<h3>Cảm ơn bạn đã lựa chọn Hoang Booking!</h3>" +
                               $"<p>Mã đặt phòng của bạn là: <b>#{reservationId}</b></p>" +
                               $"<p>Phương thức thanh toán: <b>{method}</b></p>" +
-                              $"<p>Tổng tiền: <b>{amount:N0} $</b></p>" +
+                              $"<p>Tổng tiền: <b>{amount:N0} VNĐ</b></p>" +
                               $"<p>Vui lòng kiểm tra mục MyMessages trên website để xem chi tiết.</p>";
                 try
                 {
