@@ -34,6 +34,12 @@ builder.Services.AddScoped<VNPayService>();
 
 builder.Services.AddControllersWithViews();
 
+// Thêm Repo mới
+builder.Services.AddScoped<ContactMessageRepo>();
+
+// Thêm Email Service
+builder.Services.AddScoped<EmailService>();
+
 // Add Session 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

@@ -16,14 +16,18 @@ namespace Bookify.Web.Controllers
         private readonly AppDbContext _dbContext;
         private readonly RoomRepo _roomRepo;
         private readonly VNPayService _vnPayService;
-
+        // --- 2 BIẾN MỚI THÊM ---
+        private readonly ContactMessageRepo _contactMessageRepo;
+        private readonly EmailService _emailService;
         public PaymentController(
             ReservationRepo reservationRepo,
             ReservationItemRepo itemRepo,
             PaymentRepo paymentRepo,
             IConfiguration config,
             RoomRepo roomRepo,
-            VNPayService vnPayService)
+            VNPayService vnPayService,
+            ContactMessageRepo contactMessageRepo, // THÊM DÒNG NÀY
+            EmailService emailService)             // THÊM DÒNG NÀY)
         {
             _reservationRepo = reservationRepo;
             _itemRepo = itemRepo;
@@ -31,6 +35,8 @@ namespace Bookify.Web.Controllers
             _paymentRepo = paymentRepo;
             _roomRepo = roomRepo;
             _vnPayService = vnPayService;
+            _contactMessageRepo = contactMessageRepo; // GÁN BIẾN
+            _emailService = emailService;             // GÁN BIẾN
             _dbContext = null!; // not used directly, kept for future use
         }
 
@@ -98,7 +104,7 @@ namespace Bookify.Web.Controllers
             });
 
             reservation.Status = "Chờ thanh toán tại khách sạn";
-            await _reservationRepo.Update(reservation);
+            await SendConfirmationAndMessage(reservation.Id, "Tiền mặt", amount);
 
             HttpContext.Session.Remove("ReservationCart");
             return RedirectToAction("Success", new { reservationId = reservation.Id });
@@ -183,7 +189,7 @@ namespace Bookify.Web.Controllers
                 });
 
                 reservation.Status = "Đã thanh toán (VNPay)";
-                await _reservationRepo.Update(reservation);
+                await SendConfirmationAndMessage(reservationId, "Chuyển khoản VNPay", vnpAmount > 0 ? vnpAmount : reservation.TotalAmount);
             }
 
             HttpContext.Session.Remove("ReservationCart");
@@ -278,6 +284,45 @@ namespace Bookify.Web.Controllers
 
             TempData["SuccessMessage"] = "Đã đặt lại tất cả đặt phòng thành công!";
             return RedirectToAction("Index", "Home");
+        }
+
+        // ─── Hàm Hỗ trợ: Bắn Email và Lưu MyMessages ──────────────────────────
+        private async Task SendConfirmationAndMessage(int reservationId, string method, decimal amount)
+        {
+            // Lấy email khách hàng (Do Identity lưu Email vào Name)
+            string userEmail = User.Identity?.Name ?? "guest";
+
+            // 1. Lưu tin nhắn vào CSDL (Mục MyMessages của khách)
+            var sysMessage = new ContactMessage
+            {
+                FullName = "Hệ thống Hoang Booking",
+                Email = "noreply@hoangbooking.somee.com",
+                Message = $"CHÚC MỪNG: Bạn đã đặt phòng thành công (Mã đơn: #{reservationId}). Tổng thanh toán: {amount:N0} VND qua {method}.",
+                UserId = userEmail,
+                SentAt = DateTime.UtcNow,
+                IsRead = false,
+                IsUserRead = false
+            };
+            await _contactMessageRepo.Add(sysMessage);
+
+            // 2. Bắn Email xác nhận
+            if (userEmail != "guest")
+            {
+                string subject = $"Hoang Booking - Xác nhận đơn đặt phòng #{reservationId}";
+                string body = $"<h3>Cảm ơn bạn đã lựa chọn Hoang Booking!</h3>" +
+                              $"<p>Mã đặt phòng của bạn là: <b>#{reservationId}</b></p>" +
+                              $"<p>Phương thức thanh toán: <b>{method}</b></p>" +
+                              $"<p>Tổng tiền: <b>{amount:N0} $</b></p>" +
+                              $"<p>Vui lòng kiểm tra mục MyMessages trên website để xem chi tiết.</p>";
+                try
+                {
+                    await _emailService.SendEmailAsync(userEmail, subject, body);
+                }
+                catch
+                {
+                    // Đặt try-catch để nếu cấu hình mail sai, web vẫn không bị sập luồng thanh toán
+                }
+            }
         }
     }
 }
