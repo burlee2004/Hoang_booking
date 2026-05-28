@@ -292,16 +292,24 @@ namespace Bookify.Web.Controllers
             // Lấy email khách hàng (Do Identity lưu Email vào Name)
             string userEmail = User.Identity?.Name ?? "guest";
 
-            // 1. SỬA LẠI THÊM CHỮ "VNĐ" Ở DÒNG NÀY
+            // 1. Lưu tin nhắn vào CSDL (Mục MyMessages của khách)
             var sysMessage = new ContactMessage
             {
                 FullName = "Hệ thống Hoang Booking",
-                Email = "noreply@hoangbooking.somee.com",
-                Message = $"CHÚC MỪNG: Bạn đã đặt phòng thành công (Mã đơn: #{reservationId}). Tổng thanh toán: {amount:N0} VNĐ qua {method}.",
+                Email = userEmail,
+
+                // Mượn cột Message làm "Tiêu đề" để hiển thị ngoài danh sách
+                Message = $"[Thông báo hệ thống] Xác nhận đơn đặt phòng #{reservationId}",
                 UserId = userEmail,
                 SentAt = DateTime.UtcNow,
-                IsRead = false,
-                IsUserRead = false
+
+                // 🔴 ĐIỂM MẤU CHỐT: Đưa nội dung vào AdminReply để báo về cho User
+                AdminReply = $"CHÚC MỪNG: Bạn đã đặt phòng thành công (Mã đơn: #{reservationId}). Tổng thanh toán: {amount:N0} VNĐ qua {method}.",
+                RepliedAt = DateTime.UtcNow,
+
+                // 🔴 ĐẢO NGƯỢC TRẠNG THÁI ĐỌC
+                IsRead = true,       // Gán True để Admin không bị hiện thông báo chưa đọc
+                IsUserRead = false   // Gán False để Khách hàng thấy có tin nhắn mới (chữ đậm/số đỏ)
             };
             await _contactMessageRepo.Add(sysMessage);
 
